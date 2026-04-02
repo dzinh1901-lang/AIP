@@ -2,24 +2,109 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Light Intelligence Design System ─────────────────────────── */
 :root {
-  --foreground-rgb: 220, 230, 240;
-  --background-start-rgb: 13, 17, 23;
+  /* Core palette */
+  --color-bg:          #f1f5f9;   /* slate-100 page background      */
+  --color-surface:     #ffffff;   /* card / panel surfaces           */
+  --color-surface-2:   #f8fafc;   /* subtle inset backgrounds        */
+  --color-border:      #e2e8f0;   /* slate-200                       */
+  --color-border-soft: #f1f5f9;   /* very light dividers             */
+
+  /* Text */
+  --color-text-primary:   #0f172a; /* slate-900  */
+  --color-text-secondary: #475569; /* slate-600  */
+  --color-text-muted:     #94a3b8; /* slate-400  */
+
+  /* Accent — indigo */
+  --color-accent:       #6366f1;   /* indigo-500 */
+  --color-accent-light: #eef2ff;   /* indigo-50  */
+  --color-accent-mid:   #c7d2fe;   /* indigo-200 */
+
+  /* Signals */
+  --color-buy:  #059669; /* emerald-600 */
+  --color-sell: #dc2626; /* red-600     */
+  --color-hold: #d97706; /* amber-600   */
+
+  /* Contrast zone (brief / dark strip) */
+  --color-zone-dark:        #0f172a; /* slate-900 */
+  --color-zone-dark-card:   #1e293b; /* slate-800 */
+  --color-zone-dark-border: #334155; /* slate-700 */
+  --color-zone-dark-text:   #e2e8f0; /* slate-200 */
+  --color-zone-dark-muted:  #94a3b8; /* slate-400 */
+
+  /* Shadows */
+  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+  --shadow-card-hover: 0 4px 12px 0 rgb(0 0 0 / 0.10), 0 2px 4px -1px rgb(0 0 0 / 0.06);
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-start-rgb));
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  color: var(--color-text-primary);
+  background: var(--color-bg);
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
+/* ── Scrollbar ──────────────────────────────────────────────────── */
 .scrollbar-thin::-webkit-scrollbar {
   width: 4px;
 }
 .scrollbar-thin::-webkit-scrollbar-track {
-  background: #161b22;
+  background: var(--color-surface-2);
 }
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: #30363d;
+  background: var(--color-border);
   border-radius: 2px;
+}
+
+/* Scrollbar in dark zones */
+.zone-dark .scrollbar-thin::-webkit-scrollbar-track {
+  background: var(--color-zone-dark-card);
+}
+.zone-dark .scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--color-zone-dark-border);
+}
+
+/* ── Utility classes ────────────────────────────────────────────── */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.card:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.zone-dark {
+  background: var(--color-zone-dark);
+  color: var(--color-zone-dark-text);
+}
+
+.section-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+/* Confidence bar gradient */
+@keyframes bar-grow {
+  from { width: 0; }
+}
+.bar-buy   { background: var(--color-buy);  }
+.bar-sell  { background: var(--color-sell); }
+.bar-hold  { background: var(--color-hold); }
+
+/* ── Recharts overrides for light theme ────────────────────────── */
+.recharts-cartesian-grid line {
+  stroke: var(--color-border) !important;
+}
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 0.5rem !important;
+  box-shadow: var(--shadow-card-hover) !important;
 }

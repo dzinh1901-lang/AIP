@@ -57,7 +57,6 @@ export default function LoginPage() {
         setLoading(false)
         return
       }
-      // Auto-login after registration
       await handleLogin()
     } catch {
       setError('Connection error — is the backend running?')
@@ -78,28 +77,33 @@ export default function LoginPage() {
     }
   }
 
+  const inputClass =
+    'w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all'
+
   return (
-    <div className="min-h-screen bg-[#0d1117] flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--color-bg)' }}>
       <div className="w-full max-w-sm">
-        {/* Logo / header */}
+        {/* Brand */}
         <div className="text-center mb-8">
-          <div className="text-4xl mb-3">🤖</div>
-          <h1 className="text-2xl font-bold text-white">AIP</h1>
-          <p className="text-gray-400 text-sm mt-1">Agentic Market Intelligence Platform</p>
+          <div className="w-14 h-14 rounded-2xl bg-indigo-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-200">
+            <span className="text-white text-xl font-black">AIP</span>
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
+          <p className="text-slate-500 text-sm mt-1">Agentic Market Intelligence Platform</p>
         </div>
 
         {/* Card */}
-        <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-6">
+        <div className="card p-6">
           {/* Mode tabs */}
-          <div className="flex gap-2 mb-6">
+          <div className="flex gap-2 mb-6 bg-slate-100 p-1 rounded-xl">
             {(['login', 'register'] as const).map(m => (
               <button
                 key={m}
                 onClick={() => { setMode(m); setError('') }}
-                className={`flex-1 py-2 text-sm rounded-lg border transition-colors capitalize ${
+                className={`flex-1 py-2 text-sm rounded-lg font-semibold capitalize transition-all ${
                   mode === m
-                    ? 'border-[#58a6ff] bg-[#58a6ff]/10 text-[#58a6ff]'
-                    : 'border-[#30363d] text-gray-400 hover:border-[#58a6ff]/50'
+                    ? 'bg-white text-indigo-700 shadow-sm border border-slate-200'
+                    : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
                 {m}
@@ -109,7 +113,7 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Username</label>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Username</label>
               <input
                 type="text"
                 value={username}
@@ -117,26 +121,26 @@ export default function LoginPage() {
                 onKeyDown={handleKey}
                 placeholder="your_username"
                 autoComplete="username"
-                className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#58a6ff]"
+                className={inputClass}
               />
             </div>
 
             {mode === 'register' && (
               <div>
-                <label className="block text-xs text-gray-400 mb-1">Email (optional)</label>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Email <span className="text-slate-400 font-normal">(optional)</span></label>
                 <input
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   autoComplete="email"
-                  className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#58a6ff]"
+                  className={inputClass}
                 />
               </div>
             )}
 
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Password</label>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Password</label>
               <input
                 type="password"
                 value={password}
@@ -144,12 +148,12 @@ export default function LoginPage() {
                 onKeyDown={handleKey}
                 placeholder="••••••••"
                 autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#58a6ff]"
+                className={inputClass}
               />
             </div>
 
             {error && (
-              <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+              <p className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
                 {error}
               </p>
             )}
@@ -157,17 +161,21 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading || !username || !password}
-              className="w-full py-2.5 rounded-lg bg-[#58a6ff]/10 border border-[#58a6ff]/30 text-[#58a6ff] font-medium text-sm hover:bg-[#58a6ff]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold text-sm hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shadow-indigo-200"
             >
               {loading ? '⟳ Please wait…' : mode === 'login' ? 'Sign in' : 'Create account'}
             </button>
           </form>
 
-          <p className="text-xs text-gray-600 text-center mt-4">
-            When <code className="text-gray-500">REQUIRE_AUTH=false</code> (default),<br />
+          <p className="text-xs text-slate-400 text-center mt-5">
+            When <code className="text-slate-500 bg-slate-100 px-1 py-0.5 rounded">REQUIRE_AUTH=false</code> (default),<br />
             authentication is optional — the dashboard works without login.
           </p>
         </div>
+
+        <p className="text-center mt-4">
+          <a href="/" className="text-xs text-indigo-600 hover:underline font-medium">← Back to dashboard</a>
+        </p>
       </div>
     </div>
   )

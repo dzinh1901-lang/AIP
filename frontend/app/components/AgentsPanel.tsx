@@ -27,29 +27,31 @@ interface ChatMessage {
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
-const AGENT_META: Record<string, { emoji: string; title: string; color: string }> = {
-  orchestrator:        { emoji: '🎯', title: 'Orchestrator (COO)',        color: 'text-violet-400 border-violet-500/30 bg-violet-500/5' },
-  marketing:           { emoji: '📣', title: 'Marketing Director',        color: 'text-pink-400 border-pink-500/30 bg-pink-500/5' },
-  market_intelligence: { emoji: '🔍', title: 'Chief Analyst',             color: 'text-blue-400 border-blue-500/30 bg-blue-500/5' },
-  customer_success:    { emoji: '💬', title: 'Customer Success',          color: 'text-emerald-400 border-emerald-500/30 bg-emerald-500/5' },
-  analytics:           { emoji: '📊', title: 'Analytics (Data Analyst)',  color: 'text-amber-400 border-amber-500/30 bg-amber-500/5' },
+const AGENT_META: Record<string, { emoji: string; title: string; accent: string; bg: string; border: string }> = {
+  orchestrator:        { emoji: '🎯', title: 'Orchestrator (COO)',       accent: 'text-violet-700', bg: 'bg-violet-50',  border: 'border-violet-200' },
+  marketing:           { emoji: '📣', title: 'Marketing Director',       accent: 'text-pink-700',   bg: 'bg-pink-50',    border: 'border-pink-200' },
+  market_intelligence: { emoji: '🔍', title: 'Chief Analyst',            accent: 'text-blue-700',   bg: 'bg-blue-50',    border: 'border-blue-200' },
+  customer_success:    { emoji: '💬', title: 'Customer Success',         accent: 'text-emerald-700',bg: 'bg-emerald-50', border: 'border-emerald-200' },
+  analytics:           { emoji: '📊', title: 'Analytics (Data Analyst)', accent: 'text-amber-700',  bg: 'bg-amber-50',   border: 'border-amber-200' },
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function AgentStatusCard({ agent, apiUrl }: { agent: AgentStatus; apiUrl: string }) {
-  const meta = AGENT_META[agent.agent] ?? { emoji: '🤖', title: agent.agent, color: 'text-gray-400 border-gray-500/30 bg-gray-500/5' }
+function AgentStatusCard({ agent }: { agent: AgentStatus }) {
+  const meta = AGENT_META[agent.agent] ?? { emoji: '🤖', title: agent.agent, accent: 'text-slate-600', bg: 'bg-slate-50', border: 'border-slate-200' }
+  const isActive = agent.status === 'active'
+
   return (
-    <div className={`rounded-xl border p-4 flex flex-col gap-1 ${meta.color}`}>
+    <div className={`rounded-xl border p-4 flex flex-col gap-1.5 ${meta.bg} ${meta.border}`}>
       <div className="flex items-center gap-2">
-        <span className="text-xl">{meta.emoji}</span>
-        <span className="font-semibold text-white text-sm">{meta.title}</span>
+        <span className="text-lg">{meta.emoji}</span>
+        <span className={`font-bold text-sm ${meta.accent}`}>{meta.title}</span>
         <span className="ml-auto flex items-center gap-1">
-          <span className={`w-1.5 h-1.5 rounded-full ${agent.status === 'active' ? 'bg-emerald-400 animate-pulse' : 'bg-gray-500'}`} />
-          <span className="text-xs text-gray-400 capitalize">{agent.status}</span>
+          <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`} />
+          <span className="text-xs text-slate-500 capitalize">{agent.status}</span>
         </span>
       </div>
-      {agent.notes && <p className="text-xs text-gray-400 mt-1">{agent.notes}</p>}
+      {agent.notes && <p className="text-xs text-slate-500">{agent.notes}</p>}
     </div>
   )
 }
@@ -72,7 +74,6 @@ function SupportChat({ apiUrl }: { apiUrl: string }) {
     setLoading(true)
     setMessages(prev => [...prev, { role: 'user', message: msg }])
 
-    // Try SSE streaming endpoint first, fall back to regular POST
     const streamUrl = `${apiUrl}/api/agents/support/chat/stream`
     try {
       const res = await fetch(streamUrl, {
@@ -127,7 +128,6 @@ function SupportChat({ apiUrl }: { apiUrl: string }) {
         }
       }
     } catch {
-      // Fallback to regular POST
       try {
         const res = await fetch(`${apiUrl}/api/agents/support/chat`, {
           method: 'POST',
@@ -155,16 +155,16 @@ function SupportChat({ apiUrl }: { apiUrl: string }) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto space-y-3 mb-3 pr-1 max-h-64">
+      <div className="flex-1 overflow-y-auto space-y-2.5 mb-3 pr-1 max-h-64 scrollbar-thin">
         {messages.length === 0 && (
-          <p className="text-xs text-gray-500 italic">Ask anything about AIP — features, signals, getting started…</p>
+          <p className="text-xs text-slate-400 italic">Ask anything about AIP — features, signals, getting started…</p>
         )}
         {messages.map((m, i) => (
           <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`rounded-xl px-3 py-2 text-sm max-w-[85%] ${
+            <div className={`rounded-2xl px-3.5 py-2 text-sm max-w-[85%] ${
               m.role === 'user'
-                ? 'bg-[#58a6ff]/20 text-white'
-                : 'bg-[#21262d] text-gray-200'
+                ? 'bg-indigo-600 text-white rounded-br-sm'
+                : 'bg-slate-100 text-slate-800 rounded-bl-sm border border-slate-200'
             }`}>
               {m.message}
             </div>
@@ -172,8 +172,8 @@ function SupportChat({ apiUrl }: { apiUrl: string }) {
         ))}
         {loading && (
           <div className="flex justify-start">
-            <div className="rounded-xl px-3 py-2 text-sm bg-[#21262d] text-gray-400 animate-pulse">
-              Thinking…
+            <div className="rounded-2xl rounded-bl-sm px-3.5 py-2 text-sm bg-slate-100 border border-slate-200 text-slate-400">
+              <span className="animate-pulse">Thinking…</span>
             </div>
           </div>
         )}
@@ -185,12 +185,12 @@ function SupportChat({ apiUrl }: { apiUrl: string }) {
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKey}
           placeholder="Ask a question…"
-          className="flex-1 bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#58a6ff]"
+          className="flex-1 bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all"
         />
         <button
           onClick={send}
           disabled={loading || !input.trim()}
-          className="px-3 py-2 rounded-lg bg-[#58a6ff]/10 border border-[#58a6ff]/30 text-[#58a6ff] text-sm hover:bg-[#58a6ff]/20 transition-colors disabled:opacity-50"
+          className="px-3.5 py-2 rounded-xl bg-indigo-600 text-white text-sm hover:bg-indigo-700 transition-colors disabled:opacity-40 font-bold"
         >
           ↑
         </button>
@@ -248,24 +248,24 @@ function AgentQueryPanel({
 
   return (
     <div>
-      <p className="text-xs font-semibold text-gray-400 mb-2">{title}</p>
+      <p className="text-xs font-bold text-slate-600 mb-2 uppercase tracking-wide">{title}</p>
       {fieldName && (
         <input
           value={input}
           onChange={e => setInput(e.target.value)}
           placeholder={placeholder}
-          className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 mb-2 focus:outline-none focus:border-[#58a6ff]"
+          className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 mb-2 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all"
         />
       )}
       <button
         onClick={run}
         disabled={loading || (!!fieldName && !input.trim())}
-        className="px-3 py-1.5 text-xs rounded-lg bg-[#58a6ff]/10 border border-[#58a6ff]/30 text-[#58a6ff] hover:bg-[#58a6ff]/20 transition-colors disabled:opacity-50 mb-3"
+        className="px-4 py-1.5 text-xs rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-40 mb-3"
       >
         {loading ? '⟳ Loading…' : buttonLabel}
       </button>
       {result && (
-        <div className="bg-[#0d1117] border border-[#30363d] rounded-lg p-3 text-xs text-gray-300 whitespace-pre-wrap max-h-48 overflow-y-auto">
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-slate-700 whitespace-pre-wrap max-h-48 overflow-y-auto scrollbar-thin leading-relaxed">
           {result}
         </div>
       )}
@@ -302,20 +302,29 @@ export default function AgentsPanel({ apiUrl }: { apiUrl: string }) {
   }, [loadStatus, loadActivity])
 
   const tabs = [
-    { id: 'overview',      label: '🗂 Overview' },
-    { id: 'orchestrator',  label: '🎯 COO' },
-    { id: 'marketing',     label: '📣 Marketing' },
-    { id: 'intel',         label: '🔍 Analyst' },
-    { id: 'support',       label: '💬 Support' },
-    { id: 'analytics',     label: '📊 Analytics' },
+    { id: 'overview',     label: '🗂 Overview' },
+    { id: 'orchestrator', label: '🎯 COO' },
+    { id: 'marketing',    label: '📣 Marketing' },
+    { id: 'intel',        label: '🔍 Analyst' },
+    { id: 'support',      label: '💬 Support' },
+    { id: 'analytics',    label: '📊 Analytics' },
   ] as const
 
   return (
-    <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-4">
-      <h2 className="font-bold text-white mb-4 flex items-center gap-2">
-        <span>🤖</span> AI Agent Team
-        <span className="ml-auto text-xs text-gray-500">{statuses.length}/5 active</span>
-      </h2>
+    <div className="card p-5">
+      {/* Panel header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <span className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm border border-indigo-200">🤖</span>
+          <div>
+            <h2 className="font-bold text-slate-900 leading-tight">AI Agent Team</h2>
+            <p className="text-xs text-slate-400">5 specialist agents</p>
+          </div>
+        </div>
+        <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
+          {statuses.filter(s => s.status === 'active').length}/{statuses.length || 5} active
+        </span>
+      </div>
 
       {/* Tab bar */}
       <div className="flex gap-1 mb-4 overflow-x-auto pb-1">
@@ -323,10 +332,10 @@ export default function AgentsPanel({ apiUrl }: { apiUrl: string }) {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-3 py-1.5 text-xs rounded-lg border whitespace-nowrap transition-colors ${
+            className={`px-3 py-1.5 text-xs rounded-lg border whitespace-nowrap font-medium transition-all ${
               activeTab === tab.id
-                ? 'border-[#58a6ff] bg-[#58a6ff]/10 text-[#58a6ff]'
-                : 'border-[#30363d] text-gray-400 hover:border-[#58a6ff]/50 hover:text-gray-200'
+                ? 'border-indigo-300 bg-indigo-50 text-indigo-700 shadow-sm'
+                : 'border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700 bg-white'
             }`}
           >
             {tab.label}
@@ -339,24 +348,22 @@ export default function AgentsPanel({ apiUrl }: { apiUrl: string }) {
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
             {statuses.map(s => (
-              <AgentStatusCard key={s.agent} agent={s} apiUrl={apiUrl} />
+              <AgentStatusCard key={s.agent} agent={s} />
             ))}
           </div>
           <div>
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-              Recent Activity
-            </p>
-            <div className="space-y-1 max-h-48 overflow-y-auto">
+            <p className="section-label mb-2">Recent Activity</p>
+            <div className="space-y-0 max-h-48 overflow-y-auto scrollbar-thin rounded-lg border border-slate-100 divide-y divide-slate-100">
               {activity.length === 0 && (
-                <p className="text-xs text-gray-600 italic">No activity yet — agents run on schedule.</p>
+                <p className="text-xs text-slate-400 italic p-3">No activity yet — agents run on schedule.</p>
               )}
               {activity.map(a => (
-                <div key={a.id} className="flex items-start gap-2 text-xs text-gray-400 py-1 border-b border-[#21262d]">
+                <div key={a.id} className="flex items-start gap-2 text-xs text-slate-500 py-2 px-3">
                   <span>{AGENT_META[a.agent_name]?.emoji ?? '🤖'}</span>
-                  <span className="font-medium text-gray-300 capitalize">{a.agent_name.replace('_', ' ')}</span>
-                  <span className="text-gray-600">·</span>
+                  <span className="font-semibold text-slate-700 capitalize">{a.agent_name.replace('_', ' ')}</span>
+                  <span className="text-slate-300">·</span>
                   <span>{a.action_type}</span>
-                  {a.summary && <span className="text-gray-500 truncate flex-1">{a.summary}</span>}
+                  {a.summary && <span className="text-slate-400 truncate flex-1">{a.summary}</span>}
                 </div>
               ))}
             </div>
@@ -366,7 +373,7 @@ export default function AgentsPanel({ apiUrl }: { apiUrl: string }) {
 
       {/* Orchestrator */}
       {activeTab === 'orchestrator' && (
-        <div className="space-y-4">
+        <div className="space-y-5">
           <AgentQueryPanel
             title="Daily Admin Briefing"
             endpoint="/api/agents/orchestrator/briefing/generate"
@@ -388,7 +395,7 @@ export default function AgentsPanel({ apiUrl }: { apiUrl: string }) {
 
       {/* Marketing */}
       {activeTab === 'marketing' && (
-        <div className="space-y-4">
+        <div className="space-y-5">
           <AgentQueryPanel
             title="Generate Content (Teaser + Lead Nurture)"
             endpoint="/api/agents/marketing/generate"
@@ -410,7 +417,7 @@ export default function AgentsPanel({ apiUrl }: { apiUrl: string }) {
 
       {/* Market Intelligence */}
       {activeTab === 'intel' && (
-        <div className="space-y-4">
+        <div className="space-y-5">
           <AgentQueryPanel
             title="Generate Narrative Report"
             endpoint="/api/agents/market-intel/narrative/generate"
@@ -439,7 +446,7 @@ export default function AgentsPanel({ apiUrl }: { apiUrl: string }) {
 
       {/* Analytics */}
       {activeTab === 'analytics' && (
-        <div className="space-y-4">
+        <div className="space-y-5">
           <AgentQueryPanel
             title="Generate KPI Report"
             endpoint="/api/agents/analytics/kpi/generate"

@@ -7,28 +7,28 @@ interface SignalBadgeProps {
   size?: 'sm' | 'md' | 'lg'
 }
 
+const SIGNAL_STYLES: Record<string, string> = {
+  BUY:  'bg-emerald-100 text-emerald-700 border border-emerald-300 ring-1 ring-emerald-200',
+  SELL: 'bg-red-100 text-red-700 border border-red-300 ring-1 ring-red-200',
+  HOLD: 'bg-amber-100 text-amber-700 border border-amber-300 ring-1 ring-amber-200',
+}
+
+const SIZES: Record<string, string> = {
+  sm: 'text-[10px] px-1.5 py-0.5',
+  md: 'text-xs px-2.5 py-1',
+  lg: 'text-sm px-3.5 py-1.5',
+}
+
 export default function SignalBadge({ signal, size = 'md' }: SignalBadgeProps) {
-  const colors: Record<string, string> = {
-    BUY: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40',
-    SELL: 'bg-red-500/20 text-red-400 border border-red-500/40',
-    HOLD: 'bg-amber-500/20 text-amber-400 border border-amber-500/40',
-  }
-
-  const sizes: Record<string, string> = {
-    sm: 'text-xs px-2 py-0.5',
-    md: 'text-sm px-3 py-1',
-    lg: 'text-base px-4 py-1.5',
-  }
-
   const sig = signal?.toUpperCase() || 'HOLD'
-  const colorClass = colors[sig] || colors.HOLD
+  const colorClass = SIGNAL_STYLES[sig] || SIGNAL_STYLES.HOLD
 
   return (
     <span
       className={clsx(
-        'inline-block font-bold rounded-full tracking-wider',
+        'inline-flex items-center font-bold rounded-full tracking-wider leading-none',
         colorClass,
-        sizes[size]
+        SIZES[size]
       )}
     >
       {sig}

@@ -26,7 +26,7 @@ interface AssetCardProps {
   consensus?: Consensus
 }
 
-function formatPrice(price: number, symbol: string): string {
+function formatPrice(price: number): string {
   if (price >= 1000) return `$${price.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
   if (price >= 1) return `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   return `$${price.toFixed(4)}`
@@ -37,74 +37,82 @@ function formatChange(change?: number): string {
   return `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`
 }
 
-function ChangeIndicator({ value }: { value?: number }) {
-  const isPositive = (value ?? 0) >= 0
-  return (
-    <span className={isPositive ? 'text-emerald-400' : 'text-red-400'}>
-      {isPositive ? '▲' : '▼'} {formatChange(value)}
-    </span>
-  )
+const ASSET_EMOJIS: Record<string, string> = {
+  BTC: '₿', ETH: 'Ξ', GOLD: '🥇', OIL: '🛢',
+}
+
+const AGREEMENT_BADGE: Record<string, string> = {
+  high:   'bg-emerald-50 text-emerald-700 border border-emerald-200',
+  medium: 'bg-amber-50 text-amber-700 border border-amber-200',
+  low:    'bg-red-50 text-red-700 border border-red-200',
+}
+
+const BAR_COLOR: Record<string, string> = {
+  BUY: 'bg-emerald-500', SELL: 'bg-red-500', HOLD: 'bg-amber-400',
 }
 
 export default function AssetCard({ asset, consensus }: AssetCardProps) {
-  const signal = consensus?.final_signal || 'HOLD'
+  const signal = (consensus?.final_signal || 'HOLD').toUpperCase()
   const confidence = consensus?.confidence || 0
   const agreementLevel = consensus?.agreement_level || 'low'
+  const emoji = ASSET_EMOJIS[asset.symbol] || '•'
 
-  const agreementColors: Record<string, string> = {
-    high: 'text-emerald-400',
-    medium: 'text-amber-400',
-    low: 'text-red-400',
-  }
-
-  const emoji = asset.asset_type === 'crypto'
-    ? (asset.symbol === 'BTC' ? '₿' : 'Ξ')
-    : (asset.symbol === 'GOLD' ? '🥇' : '🛢')
+  const isPositive24h = (asset.change_24h ?? 0) >= 0
 
   return (
-    <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-5 hover:border-[#58a6ff]/40 transition-colors">
-      <div className="flex items-start justify-between mb-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">{emoji}</span>
-            <div>
-              <h3 className="font-bold text-white text-lg">{asset.symbol}</h3>
-              <p className="text-gray-500 text-xs">{asset.name}</p>
-            </div>
+    <div className="card p-5 flex flex-col gap-3 hover:border-indigo-200 group">
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-lg border border-slate-200">
+            {emoji}
+          </div>
+          <div>
+            <p className="font-bold text-slate-900 text-base leading-tight">{asset.symbol}</p>
+            <p className="text-slate-400 text-xs">{asset.name}</p>
           </div>
         </div>
         <SignalBadge signal={signal} size="md" />
       </div>
 
-      <div className="mb-3">
-        <div className="text-2xl font-mono font-bold text-white">
-          {formatPrice(asset.price, asset.symbol)}
+      {/* Price */}
+      <div>
+        <div className="text-2xl font-mono font-bold text-slate-900">
+          {formatPrice(asset.price)}
         </div>
-        <div className="flex gap-3 text-sm mt-1">
-          <span className="text-gray-500">1h: <ChangeIndicator value={asset.change_1h} /></span>
-          <span className="text-gray-500">24h: <ChangeIndicator value={asset.change_24h} /></span>
+        <div className="flex gap-3 text-xs mt-1">
+          <span className="text-slate-400">
+            1h:&nbsp;
+            <span className={(asset.change_1h ?? 0) >= 0 ? 'text-emerald-600 font-semibold' : 'text-red-600 font-semibold'}>
+              {formatChange(asset.change_1h)}
+            </span>
+          </span>
+          <span className="text-slate-400">
+            24h:&nbsp;
+            <span className={isPositive24h ? 'text-emerald-600 font-semibold' : 'text-red-600 font-semibold'}>
+              {formatChange(asset.change_24h)}
+            </span>
+          </span>
         </div>
       </div>
 
+      {/* AI Confidence section */}
       {consensus && (
-        <div className="border-t border-[#30363d] pt-3 mt-3">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-400">AI Confidence</span>
-            <span className="font-semibold text-white">{(confidence * 100).toFixed(0)}%</span>
+        <div className="border-t border-slate-100 pt-3 space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-slate-500 font-medium">AI Confidence</span>
+            <span className="font-bold text-slate-800">{(confidence * 100).toFixed(0)}%</span>
           </div>
-          <div className="w-full bg-[#21262d] rounded-full h-1.5 mt-1.5">
+          <div className="w-full bg-slate-100 rounded-full h-1.5">
             <div
-              className={`h-1.5 rounded-full transition-all ${
-                signal === 'BUY' ? 'bg-emerald-500' :
-                signal === 'SELL' ? 'bg-red-500' : 'bg-amber-500'
-              }`}
+              className={`h-1.5 rounded-full transition-all duration-500 ${BAR_COLOR[signal] || BAR_COLOR.HOLD}`}
               style={{ width: `${confidence * 100}%` }}
             />
           </div>
-          <div className="flex justify-between text-xs mt-1.5">
-            <span className="text-gray-500">Agreement:</span>
-            <span className={agreementColors[agreementLevel] || 'text-gray-400'}>
-              {agreementLevel.charAt(0).toUpperCase() + agreementLevel.slice(1)}
+          <div className="flex justify-between items-center">
+            <span className="text-slate-400 text-xs">Agreement</span>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${AGREEMENT_BADGE[agreementLevel] || AGREEMENT_BADGE.low}`}>
+              {agreementLevel.toUpperCase()}
             </span>
           </div>
         </div>
