@@ -17,11 +17,9 @@ const initialMarkets: TickerItem[] = [
   { symbol: 'OIL/WTI', price: 85.2, change: 2.3, type: 'commodity' },
   { symbol: 'GOLD', price: 2150, change: 0.8, type: 'commodity' },
   { symbol: 'SILVER', price: 24.8, change: 1.5, type: 'commodity' },
-  { symbol: 'NAT.GAS', price: 2.85, change: 4.1, type: 'commodity' },
+  { symbol: 'NAT.GAS', price: 2.85, change: -0.9, type: 'commodity' },
   { symbol: 'BNB/USD', price: 412, change: 2.4, type: 'crypto' },
   { symbol: 'COPPER', price: 4.12, change: -0.8, type: 'commodity' },
-  { symbol: 'WHEAT', price: 548, change: -1.2, type: 'commodity' },
-  { symbol: 'DOGE/USD', price: 0.128, change: 6.4, type: 'crypto' },
 ]
 
 function formatPrice(price: number): string {
@@ -50,34 +48,48 @@ export default function MarketTicker() {
   const doubled = [...markets, ...markets]
 
   return (
-    <div className="w-full overflow-hidden bg-bg-secondary border-y border-accent-blue/10 py-3">
-      <div
-        className="flex gap-8 whitespace-nowrap"
-        style={{
-          animation: 'ticker 40s linear infinite',
-          display: 'flex',
-          width: 'max-content',
-        }}
-      >
-        {doubled.map((item, index) => (
-          <div key={`${item.symbol}-${index}`} className="flex items-center gap-3 px-2">
-            <span className="text-gray-400 text-sm font-medium">{item.symbol}</span>
-            <span className="text-white text-sm font-bold">${formatPrice(item.price)}</span>
-            <span
-              className={`flex items-center gap-0.5 text-xs font-medium ${
-                item.change >= 0 ? 'text-accent-green' : 'text-accent-red'
-              }`}
-            >
-              {item.change >= 0 ? (
-                <TrendingUp className="w-3 h-3" />
-              ) : (
-                <TrendingDown className="w-3 h-3" />
-              )}
-              {Math.abs(item.change).toFixed(2)}%
-            </span>
-            <span className="text-gray-700">|</span>
-          </div>
-        ))}
+    <div className="w-full overflow-hidden bg-bg-card border-y border-border-base py-2.5">
+      {/* Label */}
+      <div className="flex items-center">
+        <div className="hidden sm:flex items-center gap-2 px-4 border-r border-border-base mr-4 flex-shrink-0">
+          <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+          <span className="text-xs font-semibold text-text-muted uppercase tracking-wide whitespace-nowrap">
+            Live
+          </span>
+        </div>
+        <div
+          className="flex gap-8 whitespace-nowrap"
+          style={{
+            animation: 'ticker 40s linear infinite',
+            display: 'flex',
+            width: 'max-content',
+          }}
+        >
+          {doubled.map((item, index) => (
+            <div key={`${item.symbol}-${index}`} className="flex items-center gap-2.5">
+              <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${
+                item.type === 'commodity'
+                  ? 'bg-gold-light text-gold'
+                  : 'bg-primary-light text-primary'
+              }`}>
+                {item.type === 'commodity' ? 'C' : 'Ξ'}
+              </span>
+              <span className="text-sm font-semibold text-text-base">{item.symbol}</span>
+              <span className="text-sm text-text-base">${formatPrice(item.price)}</span>
+              <span className={`flex items-center gap-0.5 text-xs font-semibold ${
+                item.change >= 0 ? 'text-success' : 'text-danger'
+              }`}>
+                {item.change >= 0 ? (
+                  <TrendingUp className="w-3 h-3" />
+                ) : (
+                  <TrendingDown className="w-3 h-3" />
+                )}
+                {Math.abs(item.change).toFixed(2)}%
+              </span>
+              <span className="text-border-base text-base select-none">·</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )

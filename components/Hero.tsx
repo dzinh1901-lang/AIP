@@ -3,99 +3,125 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
-import { ArrowRight, BarChart2, TrendingUp } from 'lucide-react'
+import { ArrowRight, BarChart2, TrendingUp, Cpu } from 'lucide-react'
 
 const Globe = dynamic(() => import('./Globe'), { ssr: false })
 
 export default function Hero() {
   return (
-    <section className="min-h-screen flex items-center pt-16 relative overflow-hidden">
-      {/* Background effects */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent-blue/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent-purple/5 rounded-full blur-3xl" />
+    <section className="min-h-screen flex items-center pt-16 bg-bg-base relative overflow-hidden">
+      {/* Subtle background pattern */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div
+          className="absolute inset-0 opacity-[0.025]"
+          style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, #2F6BFF 1px, transparent 0)`,
+            backgroundSize: '32px 32px',
+          }}
+        />
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl -translate-y-1/3 translate-x-1/3" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-gold/5 rounded-full blur-3xl translate-y-1/3 -translate-x-1/3" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-16">
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
+          {/* Left: copy */}
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
+            initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+            transition={{ duration: 0.7, delay: 0.1 }}
           >
-            <div className="inline-flex items-center gap-2 bg-accent-blue/10 border border-accent-blue/20 rounded-full px-4 py-1.5 mb-6">
-              <span className="w-2 h-2 rounded-full bg-accent-green animate-pulse" />
-              <span className="text-accent-blue text-sm font-medium">Live Market Intelligence</span>
+            {/* Status badge */}
+            <div className="inline-flex items-center gap-2 bg-primary-light border border-primary/20 rounded-full px-4 py-1.5 mb-6">
+              <span className="w-2 h-2 rounded-full bg-success animate-pulse-dot" />
+              <span className="text-primary text-sm font-semibold">Live Market Intelligence</span>
             </div>
 
-            <h1 className="text-5xl lg:text-6xl font-bold leading-tight mb-6">
-              <span className="text-white">AI-Powered</span>
+            <h1 className="text-5xl lg:text-6xl font-bold leading-[1.12] mb-6 text-text-base tracking-tight">
+              The System That{' '}
+              <span className="text-primary-gradient">Thinks</span>
               <br />
-              <span className="gradient-text">Market Intelligence</span>
+              For You
             </h1>
 
-            <p className="text-gray-400 text-lg mb-8 max-w-lg leading-relaxed">
-              Harness the power of 50+ AI models working in consensus to deliver real-time signals
-              for commodities, crypto, and global markets. Make smarter decisions with multi-model
-              validation.
+            <p className="text-text-muted text-lg mb-8 max-w-lg leading-relaxed">
+              50+ AI models reach consensus on every signal. AIP translates noisy market data
+              into clear, confident intelligence — for commodities, crypto, and beyond.
             </p>
 
-            <div className="flex flex-wrap gap-4 mb-10">
+            {/* UX philosophy quick-answers */}
+            <div className="grid grid-cols-2 gap-3 mb-8">
+              {[
+                { q: 'What is happening?', a: 'Live market pulse' },
+                { q: 'Why is it happening?', a: 'AI-sourced reasoning' },
+                { q: 'What should I do?', a: 'Consensus signal' },
+                { q: 'How confident?', a: 'Model agreement score' },
+              ].map(({ q, a }) => (
+                <div key={q} className="light-card rounded-xl p-3">
+                  <div className="text-xs text-text-muted mb-0.5">{q}</div>
+                  <div className="text-sm font-semibold text-text-base">{a}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap gap-3">
               <Link
-                href="/login"
-                className="flex items-center gap-2 bg-gradient-to-r from-accent-blue to-accent-purple px-6 py-3 rounded-lg text-white font-medium hover:opacity-90 transition-all hover:scale-105"
+                href="/dashboard"
+                className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-primary hover:shadow-lg hover:-translate-y-0.5"
               >
-                Get Started
+                Open Dashboard
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
-                href="#markets"
-                className="flex items-center gap-2 border border-accent-blue/30 px-6 py-3 rounded-lg text-accent-blue font-medium hover:bg-accent-blue/10 transition-all"
+                href="#features"
+                className="flex items-center gap-2 border border-border-base bg-bg-card hover:bg-bg-base px-6 py-3 rounded-xl text-text-base font-semibold transition-all hover:-translate-y-0.5"
               >
-                <BarChart2 className="w-4 h-4" />
-                View Markets
+                <BarChart2 className="w-4 h-4 text-primary" />
+                See Features
               </Link>
             </div>
 
-            <div className="flex gap-8">
+            {/* Mini stats */}
+            <div className="flex gap-8 mt-10 pt-8 border-t border-border-base">
               {[
-                { icon: TrendingUp, label: '50+ AI Models', value: 'In Consensus' },
-                { icon: BarChart2, label: '200+ Markets', value: 'Covered' },
-              ].map(({ icon: Icon, label, value }) => (
+                { icon: Cpu, label: '50+ AI Models', sub: 'In consensus' },
+                { icon: TrendingUp, label: '4 Markets', sub: 'MVP launch · expanding' },
+              ].map(({ icon: Icon, label, sub }) => (
                 <div key={label} className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-accent-blue/10 border border-accent-blue/20 flex items-center justify-center">
-                    <Icon className="w-5 h-5 text-accent-blue" />
+                  <div className="w-9 h-9 rounded-lg bg-primary-light flex items-center justify-center">
+                    <Icon className="w-4 h-4 text-primary" />
                   </div>
                   <div>
-                    <div className="text-white font-semibold text-sm">{label}</div>
-                    <div className="text-gray-500 text-xs">{value}</div>
+                    <div className="text-text-base font-semibold text-sm">{label}</div>
+                    <div className="text-text-muted text-xs">{sub}</div>
                   </div>
                 </div>
               ))}
             </div>
           </motion.div>
 
-          {/* Right: 3D Globe */}
+          {/* Right: Globe (retains dark bg — intentional dark analytical zone) */}
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
+            initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
+            transition={{ duration: 0.7, delay: 0.3 }}
             className="relative"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-accent-blue/10 to-accent-purple/10 rounded-3xl blur-xl" />
-            <div className="relative rounded-3xl overflow-hidden border border-accent-blue/20">
-              <Suspense fallback={
-                <div className="w-full h-[500px] flex items-center justify-center bg-bg-card">
-                  <div className="text-accent-blue animate-pulse">Loading Globe...</div>
-                </div>
-              }>
+            <div className="absolute -inset-4 bg-gradient-to-br from-primary/8 to-gold/5 rounded-[2rem] blur-2xl" />
+            <div className="relative globe-container border border-border-base">
+              <Suspense
+                fallback={
+                  <div className="w-full h-[500px] flex items-center justify-center bg-dark-bg">
+                    <div className="text-primary text-sm animate-pulse">Loading globe…</div>
+                  </div>
+                }
+              >
                 <Globe />
               </Suspense>
             </div>
-            <div className="absolute bottom-4 left-0 right-0 text-center text-xs text-gray-500">
-              Hover over market hubs to see live data
-            </div>
+            <p className="absolute -bottom-6 left-0 right-0 text-center text-xs text-text-muted">
+              Drag to rotate · Hover hubs for live data
+            </p>
           </motion.div>
         </div>
       </div>

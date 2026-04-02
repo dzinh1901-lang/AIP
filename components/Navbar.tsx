@@ -9,75 +9,90 @@ export default function Navbar() {
 
   return (
     <motion.nav
-      initial={{ y: -100, opacity: 0 }}
+      initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6 }}
-      className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-accent-blue/10"
+      transition={{ duration: 0.5 }}
+      className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-border-base"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
+          {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center">
-              <Zap className="w-5 h-5 text-white" />
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+              <Zap className="w-4 h-4 text-white" />
             </div>
-            <span className="text-xl font-bold gradient-text">AIP</span>
+            <span className="text-xl font-bold text-primary-gradient">AIP</span>
           </Link>
 
+          {/* Desktop nav links */}
           <div className="hidden md:flex items-center gap-8">
-            {['Features', 'Markets', 'About'].map((item) => (
+            {[
+              { label: 'Features', href: '#features' },
+              { label: 'Markets', href: '#markets' },
+              { label: 'About', href: '#about' },
+            ].map((item) => (
               <Link
-                key={item}
-                href={`#${item.toLowerCase()}`}
-                className="text-gray-400 hover:text-accent-blue transition-colors duration-200 text-sm font-medium"
+                key={item.label}
+                href={item.href}
+                className="text-text-muted hover:text-text-base transition-colors duration-150 text-sm font-medium"
               >
-                {item}
+                {item.label}
               </Link>
             ))}
           </div>
 
-          <div className="hidden md:flex items-center gap-4">
-            <Link href="/login" className="text-gray-400 hover:text-white transition-colors text-sm">
-              Sign In
+          {/* Desktop CTAs */}
+          <div className="hidden md:flex items-center gap-3">
+            <Link
+              href="/dashboard"
+              className="text-text-muted hover:text-text-base transition-colors text-sm font-medium"
+            >
+              Dashboard
             </Link>
             <Link
-              href="/login"
-              className="bg-gradient-to-r from-accent-blue to-accent-purple px-4 py-2 rounded-lg text-white text-sm font-medium hover:opacity-90 transition-opacity animate-glow"
+              href="/dashboard"
+              className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-primary hover:shadow-md"
             >
               Get Started
             </Link>
           </div>
 
+          {/* Mobile menu button */}
           <button
-            className="md:hidden text-gray-400 hover:text-white"
+            className="md:hidden text-text-muted hover:text-text-base"
             onClick={() => setIsOpen(!isOpen)}
+            aria-label="Toggle menu"
           >
-            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
 
+        {/* Mobile menu */}
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="md:hidden py-4 border-t border-white/10"
+            className="md:hidden py-4 border-t border-border-base"
           >
-            {['Features', 'Markets', 'About'].map((item) => (
+            <div className="flex flex-col gap-1">
+              {['Features', 'Markets', 'About'].map((item) => (
+                <Link
+                  key={item}
+                  href={`#${item.toLowerCase()}`}
+                  className="px-2 py-2 text-text-muted hover:text-text-base hover:bg-bg-base rounded-lg transition-colors text-sm font-medium"
+                  onClick={() => setIsOpen(false)}
+                >
+                  {item}
+                </Link>
+              ))}
               <Link
-                key={item}
-                href={`#${item.toLowerCase()}`}
-                className="block py-2 text-gray-400 hover:text-accent-blue transition-colors"
+                href="/dashboard"
+                className="mt-3 bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold text-center"
                 onClick={() => setIsOpen(false)}
               >
-                {item}
+                Get Started — Free
               </Link>
-            ))}
-            <Link
-              href="/login"
-              className="block mt-4 bg-gradient-to-r from-accent-blue to-accent-purple px-4 py-2 rounded-lg text-white text-sm font-medium text-center"
-              onClick={() => setIsOpen(false)}
-            >
-              Get Started
-            </Link>
+            </div>
           </motion.div>
         )}
       </div>
