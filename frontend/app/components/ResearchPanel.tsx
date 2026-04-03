@@ -314,8 +314,10 @@ export default function ResearchPanel({ apiUrl }: { apiUrl: string }) {
   }, [apiUrl])
 
   useEffect(() => {
-    Promise.all([loadNote(), loadRegime(), loadCatalysts()]).finally(() => setLoading(false))
-    const interval = setInterval(() => { loadNote(); loadRegime(); loadCatalysts() }, 60000)
+    Promise.allSettled([loadNote(), loadRegime(), loadCatalysts()]).finally(() => setLoading(false))
+    const interval = setInterval(() => {
+      Promise.allSettled([loadNote(), loadRegime(), loadCatalysts()])
+    }, 60000)
     return () => clearInterval(interval)
   }, [loadNote, loadRegime, loadCatalysts])
 
@@ -448,7 +450,7 @@ export default function ResearchPanel({ apiUrl }: { apiUrl: string }) {
                 <div className="flex gap-2 mb-3">
                   <input
                     value={deepDiveSymbol}
-                    onChange={e => setDeepDiveSymbol(e.target.value.toUpperCase())}
+                    onChange={e => setDeepDiveSymbol(e.target.value)}
                     placeholder="e.g. BTC, Gold, ETH"
                     className="flex-1 bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#58a6ff]"
                     onKeyDown={e => e.key === 'Enter' && handleDeepDive()}
