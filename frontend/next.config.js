@@ -47,8 +47,13 @@ const nextConfig = {
               "frame-ancestors 'none'",
             ].join('; '),
           },
-          // HSTS — uncomment when serving over HTTPS in production
-          // { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+          // HSTS — 2-year max-age with preload (nginx also sets this header;
+          // having it at the application layer ensures it is present even if
+          // the reverse-proxy is bypassed in development / staging).
+          // Only sent in production so local HTTP dev is not affected.
+          ...(process.env.NODE_ENV === 'production'
+            ? [{ key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' }]
+            : []),
         ],
       },
     ]

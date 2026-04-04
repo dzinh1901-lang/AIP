@@ -98,13 +98,15 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.frontend
+      args:
+        # NEXT_PUBLIC_* vars are embedded at build time — must be passed as ARG
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?NEXT_PUBLIC_API_URL must be set}
     restart: always
     depends_on:
       - backend
     expose:
       - "3000"
     environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?NEXT_PUBLIC_API_URL must be set}
       NODE_ENV: production
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ || exit 1"]
@@ -117,20 +119,37 @@ services:
         limits:
           memory: 512m
 
-  # ── Nginx reverse proxy ─────────────────────────────────────────────────────
-  # Uncomment and configure when deploying behind TLS termination.
-  # nginx:
-  #   image: nginx:alpine
-  #   restart: always
-  #   ports:
-  #     - "80:80"
-  #     - "443:443"
-  #   volumes:
-  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-  #     - ./nginx/certs:/etc/nginx/certs:ro
-  #   depends_on:
-  #     - backend
-  #     - frontend
+  # ── Nginx reverse proxy + TLS termination ───────────────────────────────────
+  # Serves example.com (frontend) and api.example.com (backend) over HTTPS.
+  # Replace "example.com" in nginx/nginx.conf with your actual domain, then
+  # run scripts/init-letsencrypt.sh once to issue the first TLS certificate.
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+    depends_on:
+      - backend
+      - frontend
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+
+  # ── Certbot — automatic TLS certificate renewal ─────────────────────────────
+  # Attempts renewal every 12 hours; exits 0 when nothing to renew.
+  # Initial certificate issuance: run scripts/init-letsencrypt.sh
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done'"
 
 volumes:
   postgres_data:

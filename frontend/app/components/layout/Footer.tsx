@@ -1,5 +1,7 @@
 import Link from 'next/link'
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
 export function Footer() {
   return (
     <footer className="border-t border-slate-800/60 bg-[#050c1a]">
@@ -24,7 +26,7 @@ export function Footer() {
               Dashboard
             </Link>
             <a
-              href="http://localhost:8000/docs"
+              href={`${API_URL}/docs`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-slate-500 hover:text-slate-300 transition-colors"

@@ -1,0 +1,7 @@
+User-agent: *
+# Allow the public landing page to be indexed
+Allow: /
+
+# Keep the application behind auth — not useful for crawlers
+Disallow: /dashboard
+Disallow: /login

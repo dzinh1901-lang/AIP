@@ -153,12 +153,147 @@ The agent panel is embedded directly in the dashboard UI under the Model Perform
 
 ---
 
-## 🚀 Deployment
+## 🚀 Deploying on Hostinger VPS
 
-- **Frontend** → Vercel (`npm run build` → deploy). Set `NEXT_PUBLIC_API_URL` as an
-  environment variable pointing to your deployed backend URL.
-- **Backend** → Railway / Render (`uvicorn main:app --host 0.0.0.0 --port 8000`).
-  The backend must run as a **persistent process** — APScheduler requires a long-lived
-  instance and will not work correctly on serverless platforms (e.g. AWS Lambda, Vercel
-  serverless functions). Use a container or VM-based deployment.
+The full stack (Next.js + FastAPI + PostgreSQL + Nginx + Certbot) runs as a
+Docker Compose application on a single Hostinger VPS with automatic TLS via
+Let's Encrypt.
+
+> **Requirements:** Hostinger KVM VPS — Ubuntu 22.04, 2 vCPU / 4 GB RAM minimum.
+
+---
+
+### 1 · Point DNS to your VPS
+
+In **Hostinger → Domains → DNS Zone**, add three A records pointing to your
+VPS IP address:
+
+| Type | Name  | Value      | TTL  |
+|------|-------|------------|------|
+| A    | `@`   | `<VPS IP>` | 3600 |
+| A    | `www` | `<VPS IP>` | 3600 |
+| A    | `api` | `<VPS IP>` | 3600 |
+
+Wait 5–10 minutes for DNS to propagate before proceeding.
+
+---
+
+### 2 · Provision the VPS
+
+SSH into your VPS and install Docker:
+
+```bash
+ssh root@<VPS IP>
+
+# Install Docker
+curl -fsSL https://get.docker.com | sh
+systemctl enable --now docker
+
+# Install the Compose plugin
+apt-get install -y docker-compose-plugin
+```
+
+---
+
+### 3 · Clone and configure
+
+```bash
+git clone https://github.com/1901-lang/global-market-intelligence.git
+cd global-market-intelligence
+
+# Create .env from the template
+cp .env.example .env
+```
+
+Edit `.env` — fill in every required value:
+
+```dotenv
+# Database
+DATABASE_URL=postgresql://aip:<DB_PASSWORD>@db:5432/aip
+POSTGRES_PASSWORD=<DB_PASSWORD>
+
+# Auth — generate strong secrets:
+#   python3 -c "import secrets; print(secrets.token_hex(32))"
+SECRET_KEY=<32-char hex secret>
+ENCRYPTION_KEY=<Fernet key from cryptography.fernet.Fernet.generate_key()>
+
+# AI APIs
+OPENAI_API_KEY=<key>
+ANTHROPIC_API_KEY=<key>
+GEMINI_API_KEY=<key>
+
+# CORS — match your real domain(s)
+ALLOWED_ORIGINS=https://example.com,https://www.example.com
+
+# Frontend → backend URL (used at Next.js build time)
+NEXT_PUBLIC_API_URL=https://api.example.com
+```
+
+---
+
+### 4 · Configure nginx for your domain
+
+Replace the `example.com` placeholder in the nginx config with your domain:
+
+```bash
+sed -i 's/example\.com/yourdomain.com/g' nginx/nginx.conf
+```
+
+---
+
+### 5 · Issue a TLS certificate (Let's Encrypt)
+
+Run the provided script **once** before starting the full stack:
+
+```bash
+chmod +x scripts/init-letsencrypt.sh
+./scripts/init-letsencrypt.sh yourdomain.com admin@yourdomain.com
+```
+
+The script creates a temporary self-signed certificate, starts nginx, requests
+the real certificate via the webroot ACME challenge, then reloads nginx.
+
+> **Tip:** Add `STAGING=1` to test against the Let's Encrypt staging environment
+> and avoid hitting rate limits during setup.
+
+---
+
+### 6 · Start the full stack
+
+```bash
+docker compose -f docker-compose.prod.yml up -d
+```
+
+---
+
+### 7 · Verify
+
+| Check | URL |
+|-------|-----|
+| Landing page | `https://yourdomain.com` |
+| Dashboard login | `https://yourdomain.com/login` |
+| API health | `https://api.yourdomain.com/health` |
+| API docs | `https://api.yourdomain.com/docs` |
+
+---
+
+### Certificate renewal
+
+Certificates auto-renew every 12 hours inside the `certbot` container.
+To force an immediate renewal:
+
+```bash
+docker compose -f docker-compose.prod.yml run --rm certbot renew
+docker compose -f docker-compose.prod.yml exec nginx nginx -s reload
+```
+
+---
+
+### Updating the application
+
+```bash
+git pull
+docker compose -f docker-compose.prod.yml build
+docker compose -f docker-compose.prod.yml up -d
+```
 
