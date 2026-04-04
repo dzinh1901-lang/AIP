@@ -245,6 +245,13 @@ export default function Home() {
   const fetchData = useCallback(async () => {
     try {
       const res = await fetch(`${API_URL}/api/full`, { headers: authHeaders() })
+      // Redirect to login when the session has expired or is invalid
+      if (res.status === 401) {
+        localStorage.removeItem('aip_token')
+        localStorage.removeItem('aip_refresh_token')
+        window.location.href = '/login'
+        return
+      }
       if (!res.ok) throw new Error(`API error ${res.status}`)
       const json = await res.json()
       setData(json)
@@ -278,10 +285,17 @@ export default function Home() {
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true)
-    await fetch(`${API_URL}/api/refresh`, {
+    const res = await fetch(`${API_URL}/api/refresh`, {
       method: 'POST',
       headers: authHeaders(),
-    }).catch(() => {})
+    }).catch(() => null)
+    // If the refresh endpoint rejects our token, clear the session and re-login
+    if (res && res.status === 401) {
+      localStorage.removeItem('aip_token')
+      localStorage.removeItem('aip_refresh_token')
+      window.location.href = '/login'
+      return
+    }
     setTimeout(fetchData, REFRESH_DELAY_MS)
   }, [fetchData])
 
