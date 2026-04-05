@@ -177,15 +177,21 @@ class SessionManager:
         Returns:
             Number of sessions cleaned up
         """
+        # Validate max_age_hours is a positive integer to prevent injection
+        if not isinstance(max_age_hours, int) or max_age_hours <= 0:
+            max_age_hours = 24
+        
         try:
             async with get_db() as db:
-                # Mark old sessions as inactive
+                # Mark old sessions as inactive using parameterized query
+                # Note: SQLite datetime arithmetic requires string building, but we've validated the input
+                age_str = f"-{max_age_hours} hours"
                 result = await db.execute(
-                    f"""UPDATE coordinator_sessions 
+                    """UPDATE coordinator_sessions 
                        SET is_active = 0 
                        WHERE is_active = 1 
-                       AND last_activity_at < datetime('now', '-{max_age_hours} hours')""",
-                    (),
+                       AND last_activity_at < datetime('now', ?)""",
+                    (age_str,),
                 )
                 await db.commit()
                 return 0  # SQLite doesn't return rowcount easily

@@ -205,18 +205,31 @@ class PolicyEnforcer:
         tool_name: str,
         input_data: Dict[str, Any],
     ) -> List[str]:
-        """Check input data against policies."""
+        """Check input data against policies.
+        
+        Note: This is a defense-in-depth measure. Primary SQL injection prevention
+        is handled by using parameterized queries in all database operations.
+        This check serves as an additional warning layer for suspicious patterns.
+        """
         violations = []
+        
+        # Fields that legitimately contain user-generated content
+        exempt_fields = {"query", "message", "content", "lead_context", "description"}
         
         # Check for potentially dangerous inputs
         for key, value in input_data.items():
-            if isinstance(value, str):
-                # Check for SQL-like patterns (basic prevention)
-                dangerous_patterns = ["DROP", "DELETE", "UPDATE", "INSERT", "--", ";"]
-                value_upper = value.upper()
+            if isinstance(value, str) and key not in exempt_fields:
+                # Check for SQL-like patterns (defense in depth)
+                # Note: Actual SQL injection prevention is via parameterized queries
+                value_lower = value.lower()
+                dangerous_patterns = [
+                    "drop ", "delete ", "update ", "insert ", "truncate ",
+                    "--", ";--", "'; ", "/*", "*/", "xp_", "exec(",
+                ]
                 for pattern in dangerous_patterns:
-                    if pattern in value_upper and key not in ("query", "message", "content"):
-                        violations.append(f"Potentially dangerous input in {key}")
+                    if pattern in value_lower:
+                        violations.append(f"Suspicious pattern detected in {key}")
+                        logger.warning(f"Policy check: suspicious pattern in field {key}")
                         break
         
         return violations

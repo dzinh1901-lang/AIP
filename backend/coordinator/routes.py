@@ -142,10 +142,10 @@ async def chat(
             prior_task_id=request.prior_task_id,
         )
     except Exception as e:
-        logger.error(f"Coordinator error: {e}")
+        logger.error(f"Coordinator error: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e),
+            detail="An error occurred processing your request. Please try again.",
         )
     
     return ChatResponse(
