@@ -317,6 +317,12 @@ async def lifespan(app: FastAPI):
     _startup_key_check()
     await init_db()
     await load_configured_assets()
+    
+    # Bootstrap MCP and coordinator
+    from mcp.bootstrap import init_coordinator_with_mcp
+    init_coordinator_with_mcp()
+    logger.info("MCP coordinator initialized")
+    
     asyncio.create_task(_background_scheduler())
     agent_scheduler = _make_agent_scheduler()
     agent_scheduler.start()
@@ -333,6 +339,10 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+# Include coordinator routes
+from coordinator.routes import router as coordinator_router
+app.include_router(coordinator_router)
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
